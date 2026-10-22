@@ -5,7 +5,8 @@
 ## 怎麼打開
 
 - 本機：在 Finder 對 `index.html` 按兩下，用瀏覽器打開就可以了，不用安裝任何東西
-- 線上：GitHub Pages（網址見下方）
+- 線上：https://celine-mumu.github.io/shareu/
+- 原始碼：https://github.com/Celine-MuMu/shareu
 
 ## 展示
 

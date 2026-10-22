@@ -51,5 +51,6 @@
 
 ## 階段 6：展示準備
 
-- [ ] T6.1 🤝 四個 persona 的展示腳本（3 分鐘）
-- [ ] T6.2 🤝 放上 GitHub Pages，給組員和評審網址
+- [x] T6.1 🤝 四個 persona 的展示腳本（3 分鐘）→ `docs/demo-script.md`（👤 可以照自己的講法改台詞）
+- [x] T6.2 🤝 放上 GitHub Pages：https://celine-mumu.github.io/shareu/
+- [ ] T6.3 👤 照展示腳本彩排一次（順便完成 T3.4、T4.4），在手機上也打開看看 📱
