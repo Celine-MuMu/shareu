@@ -56,10 +56,20 @@ const ItemPage = {
           '</div>' +
           (item.deposit ? '<p class="muted small">' + t('deposit_discount') + '</p>' : '') +
 
+          // 成色、購入年份、類別（R14、R15）
+          '<div class="specs">' +
+            (item.condition ? '<div><span class="muted small">' + t('condition') + '</span><strong>' + conditionLabel(item.condition) + '</strong></div>' : '') +
+            (item.purchaseYear ? '<div><span class="muted small">' + t('purchase_year') + '</span><strong>' + (item.purchaseYear === 'older' ? t('year_older') : t('year_n', { n: item.purchaseYear })) + '</strong></div>' : '') +
+            '<div><span class="muted small">' + t('list_category') + '</span><strong>' + esc(categoryLabel(item.category)) + '</strong></div>' +
+          '</div>' +
+
           (item.minRenterRating ? '<p class="note">' + icon('star') + t('min_rating_note', { n: item.minRenterRating }) + '</p>' : '') +
 
           // 租借按鈕：沒登入的話，先去登入，登入完再回來租
           '<a class="btn wide" href="#/' + (store.currentUser() ? 'rent/' + item.id : 'login?next=rent/' + item.id) + '">' + t('rent_now') + '</a>' +
+          // 問物主（R13）：物主自己看就不顯示
+          (store.currentUser() && store.currentUser().id === item.ownerId ? '' :
+            '<a class="btn secondary wide ask-btn" href="#/' + (store.currentUser() ? 'chat/' + item.id : 'login?next=chat/' + item.id) + '">' + icon('message') + t('ask_owner') + '</a>') +
 
           '<h2>' + t('description') + '</h2>' +
           '<p>' + esc(tr(item.desc)) + '</p>' +

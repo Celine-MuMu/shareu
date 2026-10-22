@@ -6,8 +6,8 @@
 // =========================================================
 
 // 資料在瀏覽器裡的名字。data.js 的格式有大改時把數字加 1，
-// 瀏覽器就會丟掉舊格式、重新載入新的假資料（v2：物品加了標籤；v3：多了評價；v4：押金降低；v5：多了贊助）
-const STORE_KEY = 'shareu-data-v5';
+// 瀏覽器就會丟掉舊格式、重新載入新的假資料（v2：物品加了標籤；v3：多了評價；v4：押金降低；v5：多了贊助；v6：成色、年份、訊息）
+const STORE_KEY = 'shareu-data-v6';
 
 const store = {
   data: null,   // 目前所有資料：{ users, items, orders, reviews, pickupPoints, currentUserId }
@@ -47,6 +47,27 @@ const store = {
   pickupPoints: function () { return this.data.pickupPoints; },
   tags: function () { return this.data.tags; },
   donations: function () { return this.data.donations || []; },
+  messages: function () { return this.data.messages || []; },
+
+  // 一段對話的所有訊息（同一個物品＋同一個發問的人）
+  thread: function (itemId, askerId) {
+    return this.messages().filter(function (m) { return m.itemId === itemId && m.askerId === askerId; });
+  },
+
+  // 跟某人有關的所有對話（他是發問的人，或他是物主），最新的在前面
+  // 回傳 [{ itemId, askerId, last }]
+  threadsOf: function (userId) {
+    const self = this;
+    const map = {};
+    this.messages().forEach(function (m) {
+      const item = self.getItem(m.itemId);
+      if (!item) return;
+      if (m.askerId !== userId && item.ownerId !== userId) return;
+      map[m.itemId + '|' + m.askerId] = { itemId: m.itemId, askerId: m.askerId, last: m };
+    });
+    return Object.keys(map).map(function (k) { return map[k]; })
+      .sort(function (a, b) { return a.last.createdAt < b.last.createdAt ? 1 : -1; });
+  },
   getTag: function (id) { return this.data.tags.find(function (x) { return x.id === id; }); },
 
   getItem: function (id) { return this.data.items.find(function (x) { return x.id === id; }); },
@@ -143,6 +164,16 @@ const store = {
       this.save();
     }
     return order;
+  },
+
+  // 送出一則訊息（R13）
+  addMessage: function (message) {
+    message.id = 'm' + Date.now() + Math.floor(Math.random() * 1000);
+    message.createdAt = new Date().toISOString();
+    if (!this.data.messages) this.data.messages = [];
+    this.data.messages.push(message);
+    this.save();
+    return message;
   },
 
   // 贊助（R12，模擬）

@@ -66,6 +66,33 @@ function tagHtml(tagId) {
   return '<span class="tag' + (tagId === 'official' ? ' official' : '') + '">' + esc(tr(tag.name)) + '</span>';
 }
 
+// ---------- 類別（R14）----------
+// 內建類別（要跟 data.js 裡的 category、icons.js 裡的 icon 名字對得上）
+const CATEGORIES = ['phone', 'optics', 'power', 'luggage', 'adapter', 'action-cam', 'camera', 'audio', 'light', 'support', 'drone'];
+
+function isBuiltinCategory(cat) { return CATEGORIES.indexOf(cat) >= 0; }
+
+// 類別名稱：內建的查中英對照，自己打的就直接顯示
+function categoryLabel(cat) { return isBuiltinCategory(cat) ? t('cat_' + cat) : cat; }
+
+// 類別 icon：自己打的類別先用「箱子」
+function categoryIcon(cat) { return isBuiltinCategory(cat) ? cat : 'box'; }
+
+// 使用者自己打過的類別（從所有物品裡找出來，不重複）
+function customCategories() {
+  const list = [];
+  store.items().forEach(function (item) {
+    if (!isBuiltinCategory(item.category) && list.indexOf(item.category) < 0) list.push(item.category);
+  });
+  return list;
+}
+
+// ---------- 成色（R15）----------
+// 由新到舊；rank 越大越新（篩選「九成新以上」時用）
+const CONDITIONS = ['new', '90', '80', '70', 'used'];
+function conditionRank(c) { return CONDITIONS.length - CONDITIONS.indexOf(c); }
+function conditionLabel(c) { return c ? t('cond_' + c) : ''; }
+
 // 物品的圖：有照片放照片，沒有就用類別 icon
 function itemPhoto(item, big) {
   // 上架時自己上傳的照片（存成圖片資料）
@@ -75,7 +102,7 @@ function itemPhoto(item, big) {
   if (item.photo) {
     return '<div class="photo' + (big ? ' big' : '') + '"><img src="img/' + esc(item.photo) + '" alt=""></div>';
   }
-  return '<div class="photo scene-' + item.scene + (big ? ' big' : '') + '">' + icon(item.category) + '</div>';
+  return '<div class="photo scene-' + item.scene + (big ? ' big' : '') + '">' + icon(categoryIcon(item.category)) + '</div>';
 }
 
 // 物品卡片（首頁、找東西頁共用）
@@ -88,7 +115,9 @@ function itemCard(item) {
     itemPhoto(item) +
     '<div class="item-body">' +
       '<div class="item-title">' + esc(tr(item.title)) + '</div>' +
-      '<div class="item-price"><strong>' + money(item.pricePerDay) + '</strong> <span class="muted">' + t('per_day') + '</span></div>' +
+      '<div class="item-price"><strong>' + money(item.pricePerDay) + '</strong> <span class="muted">' + t('per_day') + '</span>' +
+        (item.condition ? '<span class="cond">' + conditionLabel(item.condition) + '</span>' : '') +
+      '</div>' +
       '<div class="item-meta">' +
         '<span>' + esc(owner.name) + '</span>' + ratingHtml(owner) +
       '</div>' +

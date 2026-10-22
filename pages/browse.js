@@ -15,6 +15,14 @@ const PRICE_BANDS = [
   ['300-',    'price_300_up',  function (p) { return p >= 300; }],
 ];
 
+// 成色篩選：[網址上的值, 文字 key]；值是「最少要多新」
+const COND_FILTERS = [
+  ['',    'cond_any'],
+  ['new', 'cond_new'],
+  ['90',  'cond_90_up'],
+  ['80',  'cond_80_up'],
+];
+
 const SORTS = [
   ['new',        'sort_new'],
   ['price-asc',  'sort_price_asc'],
@@ -34,6 +42,7 @@ const BrowsePage = {
       tags: list(query.tags),
       pickup: list(query.pickup),
       price: query.price || '',
+      cond: query.cond || '',
       sort: query.sort || 'new',
     };
   },
@@ -47,6 +56,7 @@ const BrowsePage = {
     if (s.tags.length) parts.push('tags=' + s.tags.join(','));
     if (s.pickup.length) parts.push('pickup=' + s.pickup.join(','));
     if (s.price) parts.push('price=' + s.price);
+    if (s.cond) parts.push('cond=' + s.cond);
     if (s.sort !== 'new') parts.push('sort=' + s.sort);
     history.replaceState(null, '', '#/browse' + (parts.length ? '?' + parts.join('&') : ''));
   },
@@ -66,11 +76,13 @@ const BrowsePage = {
       if (s.pickup.length && !s.pickup.some(function (p) { return item.pickupPoints.indexOf(p) >= 0; })) return false;
       // 價格
       if (!band[2](item.pricePerDay)) return false;
+      // 成色：至少要這麼新（沒填成色的物品不算）
+      if (s.cond && !(item.condition && conditionRank(item.condition) >= conditionRank(s.cond))) return false;
       // 關鍵字：比對中英文名稱、說明、標籤、物主名字
       if (keyword) {
         const owner = store.getUser(item.ownerId);
         const text = [
-          item.title.zh, item.title.en, item.desc.zh, item.desc.en, owner.name,
+          item.title.zh, item.title.en, item.desc.zh, item.desc.en, owner.name, categoryLabel(item.category),
         ].concat((item.tags || []).map(function (id) {
           const tag = store.getTag(id);
           return tag ? tag.name.zh + ' ' + tag.name.en : '';
@@ -96,7 +108,7 @@ const BrowsePage = {
   // 目前用了幾個篩選（手機版「篩選」按鈕上的數字）
   activeCount: function () {
     const s = this.state;
-    return (s.scene ? 1 : 0) + s.tags.length + s.pickup.length + (s.price ? 1 : 0);
+    return (s.scene ? 1 : 0) + s.tags.length + s.pickup.length + (s.price ? 1 : 0) + (s.cond ? 1 : 0);
   },
 
   // ---------- 畫面 ----------
@@ -128,6 +140,10 @@ const BrowsePage = {
       return '<option value="' + b[0] + '"' + (s.price === b[0] ? ' selected' : '') + '>' + t(b[1]) + '</option>';
     }).join('');
 
+    const condOptions = COND_FILTERS.map(function (c) {
+      return '<option value="' + c[0] + '"' + (s.cond === c[0] ? ' selected' : '') + '>' + t(c[1]) + '</option>';
+    }).join('');
+
     const sortOptions = SORTS.map(function (o) {
       return '<option value="' + o[0] + '"' + (s.sort === o[0] ? ' selected' : '') + '>' + t(o[1]) + '</option>';
     }).join('');
@@ -151,6 +167,7 @@ const BrowsePage = {
           '<div class="filter-group"><div class="filter-label">' + t('filter_tags') + '</div><div class="chips" id="tagChips">' + tagChips + '</div></div>' +
           '<div class="filter-group"><div class="filter-label">' + t('filter_pickup') + '</div><div id="pickupChecks">' + pickupChecks + '</div></div>' +
           '<div class="filter-group"><div class="filter-label">' + t('filter_price') + '</div><select id="price" class="select">' + priceOptions + '</select></div>' +
+          '<div class="filter-group"><div class="filter-label">' + t('condition') + '</div><select id="cond" class="select">' + condOptions + '</select></div>' +
           '<div class="filters-foot">' +
             '<button type="button" class="btn secondary" id="clearFilters">' + t('clear_filters') + '</button>' +
             '<button type="button" class="btn only-mobile" id="showResults"></button>' +
@@ -224,6 +241,7 @@ const BrowsePage = {
     };
 
     document.getElementById('price').onchange = function () { s.price = this.value; self.refresh(); };
+    document.getElementById('cond').onchange = function () { s.cond = this.value; self.refresh(); };
     document.getElementById('sort').onchange = function () { s.sort = this.value; self.refresh(); };
 
     // 清除篩選（保留搜尋字和排序）

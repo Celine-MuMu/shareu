@@ -1,6 +1,6 @@
 # 設計文件
 
-> 狀態：✅ v1.2 已確認（2026-10-22：押金打折規則）
+> 狀態：✅ v1.3 已確認（2026-10-22：問物主、成色、自訂類別）
 
 ---
 
@@ -36,6 +36,7 @@ shareu/
 │   ├── me.js         我的租借／我的上架／評價
 │   ├── login.js      學校信箱認證（模擬）＋快速切換身分
 │   ├── rent.js       租借表單＋預約成功頁
+│   ├── chat.js       🆕 問物主的聊天室＋自動回覆
 │   └── about.js      關於我們＋贊助（團隊成員寫在最上面的 TEAM）
 ├── img/            物品照片
 └── docs/           規格文件
@@ -52,7 +53,8 @@ shareu/
 | `#/rent/:id` | 租借表單：日期、取件點、損壞保障、費用明細、模擬付款 | R4 |
 | `#/order/:id` | 預約成功：取件碼、取件資訊 | R4 |
 | `#/new` | 上架物品（可上傳照片，縮成 800px 存在瀏覽器） | R6 |
-| `#/me?tab=listings` | 我的租借／我的上架（分頁）、訂單「下一步」、雙向評價、我收到的評價 | R7、R8 |
+| `#/me?tab=listings` | 我的租借／我的上架／🆕 訊息（分頁）、訂單「下一步」、雙向評價、我收到的評價 | R7、R8 |
+| `#/chat/:itemId?with=userId` | 🆕 問物主的聊天室（with = 對方；租客打開時不用帶，物主回覆時帶租客的 id） | R13 |
 | `#/about` | 關於我們（使命、問題、安心機制、團隊）＋贊助（選金額、模擬付款、感謝畫面） | R12 |
 
 ## 4. 資料長相
@@ -60,7 +62,10 @@ shareu/
 ```js
 user   = { id, name, dept, email, verified, rating, avatar }
 item   = { id, ownerId, title: {zh, en}, category, scene, desc: {zh, en}, pricePerDay, deposit,
-           pickupPoints: [], tags: [], photo, photoData, official, minRenterRating }
+           pickupPoints: [], tags: [], photo, photoData, official, minRenterRating,
+           condition, purchaseYear }   // 🆕 R15
+         // condition：new 全新 / 90 九成新 / 80 八成新 / 70 七成新 / used 有使用痕跡
+         // category：內建的 id（phone、camera…），或使用者自己打的文字（R14）
          // photoData：上架時上傳的照片（縮小後的圖片資料）
 tag    = { id, name: {zh, en} }   // beginner 新手友善、accessories 附配件、long-term 可長租、
                                    // tutorial 可教學、near-dorm 近宿舍、official ShareU 官方
@@ -68,6 +73,8 @@ order  = { id, itemId, renterId, start, end, pickupPoint, protection,
            rent, serviceFee, protectionFee, deposit, pickupCode, status, createdAt }
          // status: pending / active / returned；deposit 是打折後實際收的押金；pickupCode 是 6 位數置物櫃取件碼
 donation = { id, amount, name, message, createdAt }   // 贊助（模擬）
+message  = { id, itemId, askerId, fromId, text, auto, createdAt }   // 🆕 R13 聊天訊息
+         // 一段對話 = 同一個物品＋同一個發問的人（askerId）；fromId 是誰說的；auto = 自動回覆
 review = { id, orderId, fromId, toId, stars, text: {zh, en} }   // 新增評價時會更新 toId 那個人的 rating、reviewCount
 pickupPoint = { id, name }   // 例如：政大中正圖書館置物櫃、學生會辦公室
 ```
@@ -110,13 +117,51 @@ pickupPoint = { id, name }   // 例如：政大中正圖書館置物櫃、學生
 - 同一種條件裡是「或」：例如勾了兩個取件點，在其中任一個都算
 - 價格範圍是下拉選單：不限／50 以下／50–150／150–300／300 以上（每日租金，NT$）
 
-## 7. 中英切換
+## 7. 問物主（R13）
+
+```
+物品頁 [我要租] [問物主]
+           │
+           ▼
+#/chat/i10  ┌ Jason · Sony A7 IV ─────────┐
+            │        可以教我怎麼用嗎？ 14:02 │  ← 我（右邊）
+            │ 可以！取件時我帶你設定一次      │  ← 物主（左邊）
+            │ 自動回覆 14:02                │
+            │ [可以換取件點嗎？][長租便宜嗎？] │  ← 快速問題
+            │ [輸入訊息…………………] [送出]    │
+            └──────────────────────────────┘
+```
+
+- **自動回覆**：送出後約 1 秒，如果現在登入的人不是物主，就用關鍵字挑一句回覆：
+  - 「教、怎麼用、設定」→ 可以教
+  - 「取、地點、置物櫃、面交、哪裡、圖書館、宿舍、學生會」→ 列出這個物品的取件點
+  - 「便宜、折扣、長租」→ 租 7 天以上可以再談
+  - 「還有、空、日期、可以租」→ 看物品頁的「已被預約的日期」
+  - 其他 → 收到，晚點詳細回覆
+- 物主自己回的訊息不會觸發自動回覆
+- 物主在「我的 → 訊息」看到每段對話（物品、誰問的、最後一句），點進去回覆
+- 先放一段範例對話：Kevin 問 Jason 的 GoPro 防不防水
+
+## 8. 成色與購入年份（R15）
+
+- 卡片：價格下面顯示「九成新」小字
+- 物品頁：「成色　九成新」「購入　2023 年」
+- 上架表單：成色下拉（五個等級）、購入年份下拉（今年往前 10 年＋「更早」）
+- 找東西篩選多一個「成色」下拉：不限／全新／九成新以上／八成新以上
+
+## 9. 自訂類別（R14）
+
+- 上架表單的類別選單最後一個是「其他（自己輸入）」，選了會出現文字框
+- 選單 = 內建類別＋目前所有物品用過的自訂類別（所以打過一次，下次就會出現）
+- 自訂類別用通用的「箱子」icon
+
+## 10. 中英切換
 
 - 畫面上的固定文字都寫在 `i18n.js`：`{ zh: {...}, en: {...} }`，程式用 `t('rent_now')` 取字
 - 物品的名稱、說明在 `data.js` 裡直接寫兩種語言
 - 選的語言存在 localStorage，下次打開還是同一種
 
-## 8. 計價規則
+## 11. 計價規則
 
 - 租金 = 每日租金 × 天數
 - 損壞保障 = 租金 × 10%（最低 NT$30），可選

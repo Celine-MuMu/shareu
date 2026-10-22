@@ -710,6 +710,74 @@ h2 { font-size: 18px; margin: 24px 0 12px; }
 .donate .done h2 { margin: 0; }
 .price-small { font-family: "Outfit", sans-serif; color: var(--point); font-weight: 700; }
 
+/* ---------- 成色、年份（R15） ---------- */
+.item-price .cond {
+  float: right;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.specs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+.specs div {
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+}
+.specs strong { font-size: 14px; }
+
+/* ---------- 問物主（R13） ---------- */
+.ask-btn { margin-top: 10px; }
+.chat-head { display: flex; align-items: center; gap: 12px; padding: 12px 14px; margin-bottom: 10px; }
+.chat-item { display: block; max-width: 100%; }
+.chat-box { display: flex; flex-direction: column; gap: 10px; padding: 12px; }
+.messages {
+  display: flex; flex-direction: column; gap: 10px;
+  height: 52vh; min-height: 280px;
+  overflow-y: auto;
+  padding: 4px;
+}
+.chat-empty { margin: auto 0; }
+.bubble-row { display: flex; flex-direction: column; align-items: flex-start; max-width: 80%; }
+.bubble-row.mine { align-self: flex-end; align-items: flex-end; }
+.bubble {
+  padding: 9px 13px;
+  border-radius: 16px 16px 16px 4px;
+  background: rgba(255, 255, 255, 0.1);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.bubble-row.mine .bubble { border-radius: 16px 16px 4px 16px; background: var(--primary); color: #fff; }
+.bubble-meta { margin-top: 2px; font-size: 11px; color: var(--muted); }
+.bubble.typing { display: flex; gap: 4px; padding: 12px 14px; }
+.bubble.typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); animation: typing 1s infinite; }
+.bubble.typing span:nth-child(2) { animation-delay: .15s; }
+.bubble.typing span:nth-child(3) { animation-delay: .3s; }
+@keyframes typing { 0%, 60%, 100% { opacity: .3; } 30% { opacity: 1; } }
+.quick { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
+.quick .chip { flex-shrink: 0; font-size: 13px; }
+.chat-input { display: flex; gap: 8px; }
+.chat-input input {
+  flex: 1; min-width: 0; min-height: 44px; padding: 0 14px;
+  border: 1px solid var(--line); border-radius: 999px;
+  background: var(--field); color: var(--text);
+  font: inherit; font-size: 16px;
+}
+.chat-input input:focus { outline: none; border-color: var(--accent); }
+.chat-input .btn { width: 44px; padding: 0; flex-shrink: 0; }
+.chat-box > p { margin: 0; }
+.thread { display: flex; align-items: center; gap: 12px; padding: 12px 14px; margin-bottom: 10px; }
+.thread .grow { display: flex; flex-direction: column; gap: 1px; }
+.thread-top { display: flex; justify-content: space-between; gap: 8px; }
+.tabs button { font-size: 14px; }
+
 /* =========================================================
    電腦版（寬度 768px 以上）：頂部顯示全部連結，藏起底部導覽列
    ========================================================= */

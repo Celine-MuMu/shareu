@@ -20,6 +20,7 @@ const pages = {
   login: LoginPage,
   rent: RentPage,
   order: OrderDonePage,
+  chat: ChatPage,
   new: ListItemPage,
   me: MePage,
   about: AboutPage,
@@ -59,7 +60,7 @@ function render() {
   if (page.bind) page.bind();
 
   // 導覽列：目前這頁的按鈕亮起來（物品、租借頁算在「找東西」底下）
-  const navName = ['item', 'rent', 'order'].indexOf(route.name) >= 0 ? 'browse' : route.name;
+  const navName = ['item', 'rent', 'order'].indexOf(route.name) >= 0 ? 'browse' : route.name === 'chat' ? 'me' : route.name;
   document.querySelectorAll('[data-route]').forEach(function (a) {
     a.classList.toggle('active', a.dataset.route === navName);
   });

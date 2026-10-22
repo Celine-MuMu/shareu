@@ -3,6 +3,7 @@
 //   上方：我的資料、評分
 //   分頁「我的租借」：我租的東西、狀態、取件碼；歸還後可以評物主
 //   分頁「我的上架」：我的物品、被誰租、預計收入；歸還後可以評租客
+//   分頁「訊息」：問物主的對話（我問別人的、別人問我的）（R13）
 //   最下面：我收到的評價
 //
 // 網址 #/me?tab=listings 會直接打開「我的上架」
@@ -21,7 +22,7 @@ const MePage = {
         '<p>' + t('me_login_needed') + '</p>' +
         '<a class="btn" href="#/login?next=me">' + t('login_title') + '</a></div>';
     }
-    this.tab = query.tab === 'listings' ? 'listings' : 'rentals';
+    this.tab = ['listings', 'messages'].indexOf(query.tab) >= 0 ? query.tab : 'rentals';
 
     // 我收到的評價
     const reviews = store.reviewsOf(me.id).slice().reverse();
@@ -47,8 +48,9 @@ const MePage = {
       '<div class="tabs" id="meTabs">' +
         '<button type="button" data-tab="rentals"' + (this.tab === 'rentals' ? ' class="on"' : '') + '>' + t('my_rentals') + '</button>' +
         '<button type="button" data-tab="listings"' + (this.tab === 'listings' ? ' class="on"' : '') + '>' + t('my_listings') + '</button>' +
+        '<button type="button" data-tab="messages"' + (this.tab === 'messages' ? ' class="on"' : '') + '>' + t('my_messages') + '</button>' +
       '</div>' +
-      '<div id="meBody">' + (this.tab === 'rentals' ? this.rentalsHtml(me) : this.listingsHtml(me)) + '</div>' +
+      '<div id="meBody">' + (this.tab === 'rentals' ? this.rentalsHtml(me) : this.tab === 'listings' ? this.listingsHtml(me) : this.messagesHtml(me)) + '</div>' +
 
       '<h2>' + t('reviews_received') + '</h2>' +
       reviewList +
@@ -79,6 +81,29 @@ const MePage = {
         '<div class="fee-row"><span class="muted small">' + t('fee_paid') + '（' + t('deposit') + ' ' + money(o.deposit) + ' ' + t('deposit_note') + '）</span><span>' + money(total) + '</span></div>' +
         orderActions(o, me.id, owner) +
       '</div>';
+    }).join('');
+  },
+
+  // ---------- 訊息（R13）----------
+  messagesHtml: function (me) {
+    const threads = store.threadsOf(me.id);
+    if (!threads.length) {
+      return emptyHtml(t('no_messages'), '#/browse', t('nav_browse'));
+    }
+    return threads.map(function (th) {
+      const item = store.getItem(th.itemId);
+      const iAmOwner = item.ownerId === me.id;
+      const other = store.getUser(iAmOwner ? th.askerId : item.ownerId);
+      const href = '#/chat/' + item.id + (iAmOwner ? '?with=' + th.askerId : '');
+      return '<a class="card thread" href="' + href + '">' +
+        '<div class="avatar">' + esc(other.name.charAt(0)) + '</div>' +
+        '<div class="grow">' +
+          '<div class="thread-top"><strong>' + esc(other.name) + '</strong><span class="muted small">' + chatTime(th.last.createdAt) + '</span></div>' +
+          '<div class="muted small ellipsis">' + esc(tr(item.title)) + '</div>' +
+          '<div class="ellipsis small">' + (th.last.fromId === me.id ? t('chat_you') + '：' : '') + esc(th.last.text) + '</div>' +
+        '</div>' +
+        '<span class="tag">' + t(iAmOwner ? 'chat_role_renter' : 'owner') + '</span>' +
+      '</a>';
     }).join('');
   },
 
@@ -139,7 +164,7 @@ const MePage = {
     document.getElementById('meTabs').onclick = function (e) {
       const btn = e.target.closest('[data-tab]');
       if (!btn) return;
-      history.replaceState(null, '', '#/me' + (btn.dataset.tab === 'listings' ? '?tab=listings' : ''));
+      history.replaceState(null, '', '#/me' + (btn.dataset.tab !== 'rentals' ? '?tab=' + btn.dataset.tab : ''));
       render();
     };
 

@@ -4,9 +4,6 @@
 // 照片可以不放，不放就用類別的 icon 當圖
 // =========================================================
 
-// 類別清單（要跟 data.js 裡的 category 對得上）
-const CATEGORIES = ['phone', 'optics', 'power', 'luggage', 'adapter', 'action-cam', 'camera', 'audio', 'light', 'support', 'drone'];
-
 const ListItemPage = {
   photoData: '',   // 使用者選的照片（縮小後的圖片資料）
 
@@ -23,9 +20,23 @@ const ListItemPage = {
       return '<option value="' + s + '">' + t('scene_' + s) + '</option>';
     }).join('');
 
+    // 類別：內建的＋大家打過的自訂類別＋最後一個「其他（自己輸入）」（R14）
     const categoryOptions = CATEGORIES.map(function (c) {
       return '<option value="' + c + '">' + t('cat_' + c) + '</option>';
+    }).join('') + customCategories().map(function (c) {
+      return '<option value="' + esc(c) + '">' + esc(c) + '</option>';
+    }).join('') + '<option value="__other">' + t('cat_other') + '</option>';
+
+    // 成色、購入年份（R15）
+    const conditionOptions = CONDITIONS.map(function (c) {
+      return '<option value="' + c + '"' + (c === '90' ? ' selected' : '') + '>' + t('cond_' + c) + '</option>';
     }).join('');
+    const thisYear = new Date().getFullYear();
+    let yearOptions = '';
+    for (let y = thisYear; y > thisYear - 10; y--) {
+      yearOptions += '<option value="' + y + '">' + t('year_n', { n: y }) + '</option>';
+    }
+    yearOptions += '<option value="older">' + t('year_older') + '</option>';
 
     const pickupChecks = store.pickupPoints().map(function (p) {
       return '<label class="check"><input type="checkbox" name="pickup" value="' + p.id + '">' +
@@ -54,6 +65,12 @@ const ListItemPage = {
         '<div class="date-row">' +
           '<label class="field"><span>' + t('filter_scene') + '</span><select name="scene" class="select">' + sceneOptions + '</select></label>' +
           '<label class="field"><span>' + t('list_category') + '</span><select name="category" class="select">' + categoryOptions + '</select></label>' +
+        '</div>' +
+        // 選「其他」才會出現的文字框
+        '<label class="field" id="customCatField" hidden><span>' + t('cat_custom') + '</span><input name="customCategory" maxlength="12" placeholder="' + t('cat_custom_ph') + '"></label>' +
+        '<div class="date-row">' +
+          '<label class="field"><span>' + t('condition') + '</span><select name="condition" class="select">' + conditionOptions + '</select></label>' +
+          '<label class="field"><span>' + t('purchase_year') + '</span><select name="year" class="select">' + yearOptions + '</select></label>' +
         '</div>' +
         '<label class="field"><span>' + t('description') + '</span><textarea name="desc" rows="3" maxlength="300" placeholder="' + t('list_desc_ph') + '"></textarea></label>' +
 
@@ -119,8 +136,16 @@ const ListItemPage = {
       reader.readAsDataURL(file);
     };
 
+    // 類別選「其他」時，顯示文字框讓人自己打
+    form.category.onchange = function () {
+      const other = this.value === '__other';
+      document.getElementById('customCatField').hidden = !other;
+      if (other) form.customCategory.focus();
+    };
+
     form.onsubmit = function (e) {
       e.preventDefault();
+      const category = form.category.value === '__other' ? form.customCategory.value.trim() : form.category.value;
       const title = form.title.value.trim();
       const desc = form.desc.value.trim();
       const price = Number(form.price.value);
@@ -133,6 +158,7 @@ const ListItemPage = {
       if (!title) error = t('list_err_title');
       else if (!(price >= 1)) error = t('list_err_price');
       else if (deposit < 0) error = t('list_err_deposit');
+      else if (!category) error = t('list_err_category');
       else if (!pickups.length) error = t('list_err_pickup');
 
       const errEl = document.getElementById('listError');
@@ -146,7 +172,9 @@ const ListItemPage = {
       const item = store.addItem({
         ownerId: store.currentUser().id,
         scene: form.scene.value,
-        category: form.category.value,
+        category: category,
+        condition: form.condition.value,
+        purchaseYear: form.year.value === 'older' ? 'older' : Number(form.year.value),
         title: { zh: title, en: title },
         desc: { zh: desc, en: desc },
         pricePerDay: Math.round(price),
