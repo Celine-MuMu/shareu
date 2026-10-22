@@ -6,8 +6,8 @@
 // =========================================================
 
 // 資料在瀏覽器裡的名字。data.js 的格式有大改時把數字加 1，
-// 瀏覽器就會丟掉舊格式、重新載入新的假資料（v2：物品加了標籤；v3：多了評價；v4：押金降低；v5：多了贊助；v6：成色、年份、訊息）
-const STORE_KEY = 'shareu-data-v6';
+// 瀏覽器就會丟掉舊格式、重新載入新的假資料（v2：物品加了標籤；v3：多了評價；v4：押金降低；v5：多了贊助；v6：成色、年份、訊息；v7：物品照片）
+const STORE_KEY = 'shareu-data-v7';
 
 const store = {
   data: null,   // 目前所有資料：{ users, items, orders, reviews, pickupPoints, currentUserId }

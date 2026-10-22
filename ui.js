@@ -94,15 +94,23 @@ function conditionRank(c) { return CONDITIONS.length - CONDITIONS.indexOf(c); }
 function conditionLabel(c) { return c ? t('cond_' + c) : ''; }
 
 // 物品的圖：有照片放照片，沒有就用類別 icon
+// 照片疊在 icon 上面；照片載不到（例如沒網路）就把照片拿掉，露出下面的 icon
 function itemPhoto(item, big) {
-  // 上架時自己上傳的照片（存成圖片資料）
+  const cls = 'photo scene-' + item.scene + (big ? ' big' : '');
+  const fallback = icon(categoryIcon(item.category));
+  let src = '';
   if (item.photoData) {
-    return '<div class="photo' + (big ? ' big' : '') + '"><img src="' + item.photoData + '" alt=""></div>';
+    src = item.photoData;                         // 上架時自己上傳的照片
+  } else if (/^https?:/.test(item.photo || '')) {
+    // 網路上的照片（Unsplash）：小卡片載小張的，物品頁載大張的
+    src = item.photo + (item.photo.indexOf('?') >= 0 ? '&' : '?') +
+      (big ? 'w=1200&h=900&fit=crop&q=75' : 'w=600&h=450&fit=crop&q=70');
+  } else if (item.photo) {
+    src = 'img/' + esc(item.photo);               // img/ 資料夾裡的照片
   }
-  if (item.photo) {
-    return '<div class="photo' + (big ? ' big' : '') + '"><img src="img/' + esc(item.photo) + '" alt=""></div>';
-  }
-  return '<div class="photo scene-' + item.scene + (big ? ' big' : '') + '">' + icon(categoryIcon(item.category)) + '</div>';
+  return '<div class="' + cls + '">' + fallback +
+    (src ? '<img src="' + src + '" alt="" loading="lazy" onerror="this.remove()">' : '') +
+  '</div>';
 }
 
 // 物品卡片（首頁、找東西頁共用）

@@ -95,6 +95,10 @@ pickupPoint = { id, name }   // 例如：政大中正圖書館置物櫃、學生
   - 標語「Share with U」和搜尋框疊在圖上不動；下面小圓點可以點，手機可以左右滑；點圖進該場景
   - 系統設定「減少動態效果」的人不會自動換圖；沒網路時顯示場景色
   - 想換照片：放進 `img/`，改 `HERO_SLIDES` 的 `image`
+- **物品照片**（2026-10-22）：16 個物品都用 Unsplash 免費圖，網址寫在 `data.js` 的 `photo`
+  - 小卡片載 600px 寬的小圖、物品頁載 1200px 的大圖（`ui.js` 的 `itemPhoto`）
+  - 照片疊在類別 icon 上面；載不到（沒網路、網址壞掉）就自動拿掉照片，露出 icon
+  - 換成自己拍的：照片放進 `img/`，把 `photo` 改成檔名（例如 `'camera.jpg'`）
 - 顏色都寫在 `style.css` 最上面的 `:root`（`--primary`、`--accent`、`--cream`、`--point`、`--concert`…），想換色只改那裡
 - 字體：Noto Sans TC
 - Icon：Lucide（線條 icon），存在 `icons.js`
