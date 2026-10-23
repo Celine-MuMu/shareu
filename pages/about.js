@@ -1,6 +1,7 @@
 // =========================================================
 // 關於我們＋贊助（R12）
-//   我們想解決什麼 → 怎麼讓大家安心 → 團隊 → 贊助我們（模擬，不會真的收錢）
+//   使命和介紹 → 我們想解決什麼 → 怎麼讓大家安心（這三段用文字，不用卡片，看起來比較專業）
+//   → 團隊 → 贊助我們（模擬，不會真的收錢）
 //   不放商業模式（requirements 已決定）
 // =========================================================
 
@@ -23,26 +24,17 @@ const AboutPage = {
   render: function () {
     this.amount = 100;
 
-    // 我們想解決的三個問題
-    const problems = [
-      ['concert', 'about_p1_title', 'about_p1_desc'],
-      ['luggage', 'about_p2_title', 'about_p2_desc'],
-      ['camera', 'about_p3_title', 'about_p3_desc'],
-    ].map(function (p) {
-      return '<div class="card about-point">' +
-        '<div class="about-icon">' + icon(p[0]) + '</div>' +
-        '<div><strong>' + t(p[1]) + '</strong><p class="muted small">' + t(p[2]) + '</p></div>' +
-        '</div>';
+    // 我們想解決的三件事：編號＋標題＋一段說明（不用卡片，像文章一樣）
+    const problems = ['about_p1', 'about_p2', 'about_p3'].map(function (key, i) {
+      return '<li>' +
+        '<span class="num">0' + (i + 1) + '</span>' +
+        '<div><h3>' + t(key + '_title') + '</h3><p>' + t(key + '_desc') + '</p></div>' +
+      '</li>';
     }).join('');
 
-    // 怎麼讓大家安心
-    const trust = [
-      ['verified', 'trust_1'],
-      ['star', 'trust_2'],
-      ['shield', 'trust_3'],
-      ['pin', 'trust_4'],
-    ].map(function (x) {
-      return '<li>' + icon(x[0]) + '<span>' + t(x[1]) + '</span></li>';
+    // 怎麼讓大家安心：簡單的清單
+    const trust = ['trust_1', 'trust_2', 'trust_3', 'trust_4'].map(function (key) {
+      return '<li>' + t(key) + '</li>';
     }).join('');
 
     // 團隊
@@ -64,19 +56,34 @@ const AboutPage = {
     const total = store.donations().reduce(function (sum, d) { return sum + d.amount; }, 0);
 
     return '<div class="narrow about">' +
-      '<h1>' + t('about_title') + '</h1>' +
-      '<p class="about-mission">' + t('about_mission') + '</p>' +
+      // 開頭：小標＋使命＋兩段介紹
+      '<section class="about-lead">' +
+        '<p class="eyebrow">' + t('about_title') + '</p>' +
+        '<h1 class="about-mission">' + t('about_mission') + '</h1>' +
+        '<div class="prose">' +
+          '<p>' + t('about_intro_1') + '</p>' +
+          '<p>' + t('about_intro_2') + '</p>' +
+        '</div>' +
+      '</section>' +
 
-      '<h2>' + t('about_problem_title') + '</h2>' +
-      '<div class="about-points">' + problems + '</div>' +
+      '<section class="about-section">' +
+        '<h2>' + t('about_problem_title') + '</h2>' +
+        '<ol class="numbered">' + problems + '</ol>' +
+      '</section>' +
 
-      '<h2>' + t('about_trust_title') + '</h2>' +
-      '<ul class="card trust-list">' + trust + '</ul>' +
+      '<section class="about-section">' +
+        '<h2>' + t('about_trust_title') + '</h2>' +
+        '<div class="prose"><p>' + t('about_trust_intro') + '</p></div>' +
+        '<ul class="trust-list">' + trust + '</ul>' +
+      '</section>' +
 
-      '<h2>' + t('about_team_title') + '</h2>' +
-      '<div class="team-grid">' + team + '</div>' +
+      '<section class="about-section">' +
+        '<h2>' + t('about_team_title') + '</h2>' +
+        '<div class="team-grid">' + team + '</div>' +
+      '</section>' +
 
       // ----- 贊助 -----
+      '<section class="about-section">' +
       '<h2 id="donate">' + t('donate_title') + '</h2>' +
       '<div class="card donate" id="donateBox">' +
       '<p class="muted">' + t('donate_desc') + '</p>' +
@@ -94,6 +101,7 @@ const AboutPage = {
 
       // 最近的支持者
       '<div id="supporters">' + this.supportersHtml() + '</div>' +
+      '</section>' +
       '</div>' +
 
       // 模擬付款視窗（跟租借用一樣的樣式）

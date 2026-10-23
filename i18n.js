@@ -250,6 +250,9 @@ const TEXT = {
     // 關於我們（R12）
     about_title: '關於 ShareU',
     about_mission: '讓每一件閒置的好東西，在同學手上再被用一次。',
+    about_intro_1: 'ShareU 是由政大學生發起的校園租借平台。我們發現，同學常常為了一場演唱會、一學期的交換、一份期末作業，花大錢買只會用幾次的東西；而另一群同學的抽屜裡，正放著一樣的器材。',
+    about_intro_2: '我們想把這兩群人連起來：用學校信箱建立信任，用校園置物櫃縮短距離，讓閒置的東西流動起來，也讓每個人用更少的錢，完成想做的事。',
+    about_trust_intro: '租借最需要的是信任。我們從這四個地方著手：',
     about_problem_title: '我們想解決的事',
     about_p1_title: '只用一次，卻要花一個月薪水',
     about_p1_desc: '演唱會想拍清楚偶像，高倍變焦手機要三萬多，用一個晚上就收起來。',
@@ -514,6 +517,9 @@ const TEXT = {
 
     about_title: 'About ShareU',
     about_mission: 'Give every idle good thing a second life in a classmate\'s hands.',
+    about_intro_1: 'ShareU is a campus rental platform started by NCCU students. Classmates often spend a lot on things they will use only a few times, for one concert, one semester abroad or one final project, while other students have the very same gear sitting in a drawer.',
+    about_intro_2: 'We connect the two: school-email verification builds trust, campus lockers shorten the distance, idle things get used again, and everyone does more for less.',
+    about_trust_intro: 'Renting runs on trust. We build it in four ways:',
     about_problem_title: 'What we\'re solving',
     about_p1_title: 'One night, a month\'s pay',
     about_p1_desc: 'A zoom phone for a concert costs over NT$30,000, and you only need it for one night.',
